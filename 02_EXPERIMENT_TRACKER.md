@@ -49,24 +49,27 @@
 
 | Phase 18 | ResNet-256 + PPO + Curriculum (3000 ep) | 76.6% (383/500) | 52.4% (262/500) | FAILED (Under 95/80 target) |
 
-| Exp ID 019 | Phase 19: Policy Distillation & Aggression Bias | TBD | TBD | [ACTIVE LOCK] |
-
-| Exp ID 020 | Phase 20: League Training & Mask Reversion | TBD | TBD | [ACTIVE LOCK] |
-
-| Exp ID 021 | Phase 21: Kaggle Parity & Transformer | TBD | TBD | [ACTIVE LOCK] |
-
-| Exp ID 022 | Phase 22: BC Value Bug & Transformer Warmup | TBD | TBD | [ACTIVE LOCK] |
-
-| Exp ID 023 | Phase 23: Real Data & Elo Gating | TBD | TBD | [ACTIVE LOCK] |
-
-| Exp ID 024 | Phase 24: Hallucination Audit & Proof of Life | TBD | TBD | [ACTIVE LOCK] |
-
-| Exp ID 025 | Phase 25: Workspace Quarantine & True BC | TBD | TBD | [ACTIVE LOCK] |
-
-| Exp ID 026 | Phase 26: Massive Scale-Up & League Training | TBD | TBD | [ACTIVE LOCK] |
-
-| Exp ID 027 | Phase 27: Kaggle Deployment | TBD | TBD | [ACTIVE LOCK] |
-
-| Exp ID 028 | Phase 28: Kaggle Environment Forensics | TBD | TBD | [ACTIVE LOCK] |
-
-| Exp ID 029 | Phase 29: Root Cause Verification | TBD | TBD | [ACTIVE LOCK] |
+| Exp ID 019 | Phase 19: Architecture Pivot (PPO to Transformer) | N/A | Investigated NaN bug; decided to pivot to Transformer architecture | [RELEASED] |
+| Exp ID 020 | Phase 20: Transformer Setup | N/A | Implemented custom Transformer for state processing | [RELEASED] |
+| Exp ID 021 | Phase 21: Kaggle Parity | N/A | Addressed PyTorch inference parity on CPU | [RELEASED] |
+| Exp ID 022 | Phase 22: Value Bug Patch | N/A | Patched value bug and warmed up Transformer | [RELEASED] |
+| Exp ID 023 | Phase 23: Real Data Fetch | N/A | Real dataset fetched and integrated into training | [RELEASED] |
+| Exp ID 024 | Phase 24: Hallucination Audit | N/A | Addressed hallucinated paths and validated proof of life | [RELEASED] |
+| Exp ID 025 | Phase 25: True BC Pretraining | N/A | Cleaned environment and pre-trained BC accurately | [RELEASED] |
+| Exp ID 026 | Phase 26: Massive Scale-Up | N/A | Scaled up League Training with Transformer | [RELEASED] |
+| Exp ID 027 | Phase 27: Kaggle Deployment | N/A | Created submission bundle | [RELEASED] |
+| Exp ID 028 | Phase 28: C++ Engine Forensics | N/A | Diagnosed Kaggle simulation C++ execution bugs | [RELEASED] |
+| Exp ID 029 | Phase 29: Root Cause Verification | N/A | Verified local vs remote environment mismatches | [RELEASED] |
+| Exp ID 030 | Phase 30: ONNX Pivot | N/A | Decided to export model to ONNX to bypass Kaggle PyTorch limits | [RELEASED] |
+| Exp ID 031 | Phase 31: ONNX Parity | N/A | Validated ONNX inference numerical parity | [RELEASED] |
+| Exp ID 032 | Phase 32: Fallback Logic Implementation | N/A | Added try-except logic for robust Kaggle deployment | [RELEASED] |
+| Exp ID 033 | Phase 33: True Deployment | N/A | Shipped ONNX wheel with submission tarball | [RELEASED] |
+| Exp ID 034 | Phase 34: Telemetry (Abandoned) | N/A | Skipped due to step 0 global crash | [RELEASED] |
+| Exp ID 035 | Phase 35: Forensics & Repair | N/A | Investigated the fatal error occurring before agent loop | [RELEASED] |
+| Exp ID 036 | Phase 36: Silent Failure Trap | ERROR | Validated cross-platform binaries but hit silent failure | [RELEASED] |
+| Exp ID 037 | Phase 37: Fallback Shape Patch | ERROR | Fixed fallback nested list format to flat list | [RELEASED] |
+| Exp ID 038 | Phase 38: Step 0 Deck Injection | ERROR | Discovered Kaggle expects full 60-card deck on Step 0 | [RELEASED] |
+| Exp ID 039 | Phase 39: Absolute Encapsulation | ERROR | Moved `__file__` inside agent scope to avoid Kaggle string-exec bugs | [RELEASED] |
+| Exp ID 040 | Phase 40: Unbreakable Shell | ERROR | Wrapped `agent()` internals in master `try...except` block | [RELEASED] |
+| Exp ID 041 | Phase 41: Vanilla Baseline | COMPLETE (433.9) | Removed ONNX entirely, fed sample integer deck on Step 0 | [RELEASED] |
+| Exp ID 042 | Phase 42: ONNX Brain Transplant | COMPLETE (345.6) | Injected Top-K ONNX masking logic + Dummy Model fallback check | [ACTIVE LOCK] |

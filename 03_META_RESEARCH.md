@@ -2,8 +2,8 @@
 ## 1. DOMAIN UNDERSTANDING
 Pokemon TCG: Active pokemon, bench, hand, energy attachments, prize cards.
 ## 2. EVALUATION METRIC
-Kaggle leaderboard rating (Goal: 1100+)
-## 3. FEATURE HYPOTHESES
+Kaggle leaderboard rating (Goal: 1100+). 
+*Note (Phase 46 Correction):* The initial submission score (e.g., 600.0) is merely the result of a Validation Episode (crash-check), NOT a measure of model skill. True rankings are generated over time in the matchmaking pool.
 Vectorized state-space representation encoding game board arrays for Neural Network.
 
 ### Evidence-Backed V2 State Vectorization Blueprint (Empirical Grounding)

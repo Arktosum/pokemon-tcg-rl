@@ -21,7 +21,7 @@ try:
         KAGGLE_AGENT_PATH = '/kaggle_simulations/agent/'
 
     # Inject ONNX runtime
-    sys.path.insert(0, os.path.join(KAGGLE_AGENT_PATH, 'src', 'kaggle_libs', 'onnxruntime_pkg'))
+    #sys.path.insert(0, os.path.join(KAGGLE_AGENT_PATH, 'src', 'kaggle_libs', 'onnxruntime_pkg'))
 
     import onnxruntime as ort
     model_path = os.path.join(KAGGLE_AGENT_PATH, 'titan_model.onnx')
