@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Models and Data
+*.onnx
+*.pth
+*.pt
+checkpoints/
+
+# Virtual Environment
+venv/
+env/
+.env
+
+# Build/Deploy Artifacts
+*.tar.gz
+*.zip
+build/
+dist/
+*.egg-info/
+
+# Logs and Metrics
+logs/
+metrics/
+*.log
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+
+
+kaggle_libs
+
+*.json
+
+data

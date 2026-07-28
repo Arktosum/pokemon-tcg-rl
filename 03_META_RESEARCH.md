@@ -1,61 +1,60 @@
 # 03_META_RESEARCH
+## 1. DOMAIN UNDERSTANDING
+Pokemon TCG: Active pokemon, bench, hand, energy attachments, prize cards.
+## 2. EVALUATION METRIC
+Kaggle leaderboard rating (Goal: 1100+)
+## 3. FEATURE HYPOTHESES
+Vectorized state-space representation encoding game board arrays for Neural Network.
 
-## SUMMARY OF GROUND TRUTH
-The Kaggle Simulation competition requires building an AI for the `cabt Engine`. Importantly, Kaggle provides daily exports of top-rated episode replays to facilitate Behavior Cloning (BC) and Reinforcement Learning (RL). The dataset contains 60 files (327 MB) including the engine source code.
+### Evidence-Backed V2 State Vectorization Blueprint (Empirical Grounding)
+* **Design Philosophy**: Based on RLCard and MageZero, we must preserve semantic geometry rather than naively flattening. We will output an array of Token IDs (for `nn.Embedding`) and scalars (normalized).
+* **Global Game State**: Turn number, turnActionCount, player index, firstPlayer.
+* **Player State (x2)**:
+  * Handcrafted Features: deckCount, handCount, benchMax, prizeCount, status conditions (poisoned, burned, asleep, paralyzed, confused).
+  * Active Pokemon: Card ID (integer for embedding), HP, MaxHP, Attached Energy Count.
+  * Bench Pokemon (Fixed size 5): Array of [Card ID, HP, MaxHP, Energy Count]. Zero-padded if empty.
+* **Total Vector Size**: Flattened array of shape (120,) containing integers and floats. High boundary set to 3000 to accommodate max Card ID (2104).
+* **Action Space**: `Discrete(500)`. Strict Dynamic Masking applied (`action_mask`) as per RLCard standards to prune illegal moves. If `maxCount > 1`, randomly sample remaining from unmasked pool to fulfill engine requirements.
 
-## 1. COMPETITION ANALYSIS (Based on `00_GROUND_TRUTH.md`)
-Before discussing algorithms, we must rigorously analyze the competition parameters as defined by Kaggle and The Pokémon Company.
+### Phase 3 Architecture Blueprint
+* **PokemonAlphaNet**: A Two-Stream Feature Extractor.
+  * **Stream A**: `nn.Embedding(3000, 32)` extracting the 12 categorical Card IDs from the state.
+  * **Stream B**: `Linear -> LayerNorm -> SiLU` processing the remaining 58 continuous/scalar game state features.
+  * **Backbone**: Streams A and B are concatenated (`torch.cat`) and fed into a Residual MLP backbone.
+* **Dual Heads**: 
+  * **Policy Head**: Emits 500 logits. Illegal logits masked to $-1e9$ before applying Softmax.
+  * **Value Head**: Emits a scalar $[-1, 1]$ via `Tanh`.
+* **PUCT Search**: ISMCTS-compatible tree node structure utilizing Predictor + Upper Confidence Bound applied to Trees, injecting Dirichlet noise ($\alpha=0.3$) at the root node for exploration.
 
-### 1.1 Core Game Mechanics & Challenges
-- **Imperfect Information (Hidden State):** The overview explicitly states players must be "mindful of their opponent's own strategies, decks and hands," and highlights that "Not knowing what cards an opponent holds presents a core challenge." This officially confirms the environment is a POMDP (Partially Observable Markov Decision Process).
-- **Stochasticity (Randomness):** The rules emphasize that "card draws and coin tosses introduce additional gameplay variables." A successful agent cannot rely on deterministic planning (like perfect Monte Carlo Tree Search).
-- **Complexity:** The agent must consider "various Pokémon types and thousands of different card combinations" and "evolving strategies."
+### Phase 4 Training Pipeline & Loss Engineering Blueprint
+* **Self-Play Trajectory Target**: Store tuples of $(s_t, \boldsymbol{\pi}_t, z_t)$, where $s_t$ is the environment state vector, $\boldsymbol{\pi}_t$ is the MCTS search-improved policy vector, and $z_t \in \{-1, +1\}$ is the final game winner relative to the acting player at time $t$.
+* **AlphaZero Combined Loss Function**: 
+$$L = (z - v)^2 - \boldsymbol{\pi}^T \log \mathbf{p} + c \Vert{}\theta\Vert{}^2$$
+where $v$ is the predicted value, $\mathbf{p}$ is the predicted policy vector, and $c \Vert{}\theta\Vert{}^2$ is L2 weight decay ($c = 10^{-4}$).
 
-### 1.2 The Simulator Engine (`cabt Engine`)
-- **API Inputs:** Every turn, the agent receives an `Observation` containing:
-  - Game logs (history of the match)
-  - Current board state (Public zones, own hand, own deck count)
-  - A strict list of **Legal Options**
-- **API Outputs:** The agent must return an array of integers representing the *indices* of the options it chooses to execute.
-- **Rule Enforcement:** The engine strictly handles rule enforcement—it "only ever presents legal moves," meaning our agent does not need to learn the rules of the game from scratch, it only needs to learn *which* legal move is best.
+### Phase 5 Behavioral Cloning Blueprint
+* **Data Source**: High-scoring Kaggle simulation `.json` episode replays.
+* **State Translation**: Extract JSON dictionaries and translate them into the exact V2 (120,) state vector format and (500,) action mask to prevent State-Space Mismatch.
+* **Supervised Target**: The actual action taken by the winning player ($\mathbf{p}_{expert}$) and the final game result ($z_{expert}$).
+* **BC Loss**: Minimize Cross-Entropy (or KL Divergence) for the Policy Head and MSE for the Value Head: $L_{BC} = MSE(\hat{z}, z_{expert}) - \sum \mathbf{p}_{expert} \log \hat{\mathbf{p}}$.
 
-### 1.3 Evaluation & Leaderboard System
-- **Ranking Algorithm:** Kaggle uses a Gaussian Skill Rating system $N(\mu, \sigma^2)$ (very similar to Microsoft's TrueSkill or Elo with confidence intervals). All agents start at $\mu_0 = 600$.
-- **Matchmaking:** The system runs continuous episodes, matching agents with similar ratings.
-- **Submission Limits:** You can submit 5 agents per day. Submissions must be a `.tar.gz` containing a `main.py` and a `deck.csv`. Only the 2 most recent submissions are kept active on the ladder.
-- **Validation:** Before entering the ladder, a submission must pass a Validation Episode by playing against a copy of itself. If it crashes, it fails.
 
-### 1.4 Provided Data
-- **Engine Source:** The `ptcg_engine` source code and `sample_submission`.
-- **Card Metadata:** `EN_Card_Data.csv` (35 columns including HP, Type, Weakness, Resistance, Move Costs, Damage, Rules). This is crucial for giving our neural network mathematical representations of the cards (embeddings).
-- **Replay Data:** Kaggle provides daily exports of top-rated episodes in the forums to facilitate "BC/RL/IL" (Behavior Cloning / Reinforcement Learning / Imitation Learning).
+## Phase 13: Proximal Policy Optimization (PPO)
 
-### 1.5 ONLINE RESEARCH (COMMUNITY META)
-Based on web queries to Kaggle Discussions and `kaggle kernels list -c pokemon-tcg-ai-battle`, here is what the community is actually doing:
-1. **Rule-Based Heuristics Dominate Early Meta:** The most upvoted notebooks on Kaggle are almost entirely hardcoded, rule-based agents tailored to specific deck archetypes. Examples include: *"A Sample Rule-Based Agent Mega Lucario ex Deck"*, *"Rule-based, not psychic: Alakazam (Best: 5th)"*, and *"Beating the Day-1 #1 Crustle Bot"*. This proves that standard "out-of-the-box" Reinforcement Learning is currently losing to well-crafted, deck-specific logic trees.
-2. **RL/MCTS is being Explored:** The #1 most upvoted notebook overall is *"Reinforcement Learning and MCTS sample code"* by Kiyota, proving the community is actively trying to crack the RL problem, but the abundance of heuristic bots on the leaderboard indicates RL hasn't fully solved the vast action space yet.
-3. **Score Stabilization Strategy:** Forum discussions reveal a quirk in Kaggle's TrueSkill system: newer agents get scheduling priority, but submitting more than 2 agents at a time causes them to steal matches from each other, drastically slowing down score stabilization. We must submit sparingly.
-4. **Archetype Analysis:** The community actively analyzes the daily replay files (e.g., *"Replay Archetype Analysis"* notebooks) to figure out which decks (Alakazam, Archaludon, Starmie) have the highest win rates, allowing them to hardcode counters.
+Due to Kaggle C++ engine state cloning limitations, MCTS is structurally impossible. We pivot to PPO. The network is renamed PokemonActorCritic. Rollouts are stored in PPOBuffer, Generalized Advantage Estimation (GAE) is applied, and weights are updated via PPO Clipped Objective.
 
-### 1.6 GROUND TRUTH CODE ANALYSIS (Community Algorithms)
-Based on our extraction and reading of the top Kaggle notebooks saved in `input/ground_truth/notebooks/`:
-- **Kiyota's RL + MCTS:** We discovered that parsing the JSON `Observation` space is incredibly difficult due to variable list lengths (bench size, hand size). Kiyota solved this elegantly using a PyTorch `EmbeddingBag` combined with a **Transformer Encoder-Decoder** architecture. The Encoder maps the board into a latent space, and the Decoder parses legal moves. We will adopt this exact tensor encoding scheme to avoid dimension mismatch errors when building our RL architecture.
-- **Roman Rozen's Baseline:** The top rule-based bot uses a massive heuristic scoring tree (e.g., `target_score`, `prize_count`) combined with a lightweight UCB1 (Upper Confidence Bound) search to simulate one step ahead and avoid traps. This proves that raw heuristics augmented with mini-search trees are the current standard to beat.
 
-## 2. ALGORITHM JUSTIFICATION (Why PPO?)
-Before proceeding, we must scientifically justify the choice of Proximal Policy Optimization (PPO) over other Reinforcement Learning algorithms.
+## Reward Shaping (Phase 16)
+- **Win:** +1.0
+- **Loss:** -1.0
+- **Dense Rewards (Irreversible Progression):** Taking a Prize Card = +0.1, Opponent taking Prize Card = -0.1.
 
-**1. The POMDP Problem (Hidden Information)**
-Pokémon TCG is a Partially Observable Markov Decision Process (POMDP). You do not know the opponent's hand, the exact order of your deck, or your prize cards.
-* **Why not DQN?** Deep Q-Networks (DQN) evaluate the exact value of a specific state-action pair ($Q(s,a)$). In POMDPs, the true state $s$ is unknown, which breaks the Markov property that DQN relies on, leading to severe instability.
-* **Why PPO?** Policy Gradient methods like PPO directly optimize the policy $\pi(a|s)$ rather than the value function. When combined with an LSTM/GRU layer to maintain memory of past observations (RNN-PPO), it naturally handles hidden information.
+## Residual Network Backbone (Phase 17)
+- **Architecture:** Replaced MLP with 4 Residual Blocks (Linear -> LayerNorm -> ReLU -> Linear -> LayerNorm -> Skip Add -> ReLU).
+- **Hidden Dimension:** 256.
+- **Memory Management:** Aggressive gc.collect() and empty_cache() during PPO rollouts to prevent VRAM OOM.
 
-**2. Variable and Massive Action Spaces**
-At any given turn, a player might have 0 actions or 50 valid actions depending on their hand and bench.
-* **Why not DQN?** DQN requires outputting a Q-value for *every possible action* in the game's entire action space, masking out invalid ones. This is extremely inefficient.
-* **Why PPO?** PPO's actor network outputs a probability distribution over valid actions. It scales elegantly to massive action spaces through action masking.
-
-**3. Self-Play Stability (The Clipping Objective)**
-We will be training the agent via Self-Play (playing against past versions of itself).
-* **Why not AlphaZero/MCTS?** AlphaZero relies on a perfect forward model (Monte Carlo Tree Search). TCGs have high stochasticity (coin flips, card draws) making MCTS computationally prohibitive due to extreme branching factors.
-* **Why PPO?** PPO uses a clipped surrogate objective function: $L^{CLIP}(\theta) = \hat{E}_t [ \min(r_t(\theta)\hat{A}_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon)\hat{A}_t) ]$. This mathematically guarantees that the policy does not change too drastically in a single update. In self-play, this prevents "catastrophic forgetting" where the agent unlearns good behavior by overfitting to a specific weakness in its current opponent.
+### Phase 18 Curriculum Rewards
+- **Dense Progression Rewards:** Add +0.05 for Bench-filling (max 5) and +0.05 for Energy Attachment (max 3 per mon).
+- **The Safety Lock:** Implemented via max total bounds per episode to prevent infinite loop reward farming.
+- **Robustness Training (Domain Randomization):** 30% of self-play games are against a Random Agent to force OOD robustness.
