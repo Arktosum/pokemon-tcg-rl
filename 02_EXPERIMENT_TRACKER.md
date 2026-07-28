@@ -73,3 +73,12 @@
 | Exp ID 040 | Phase 40: Unbreakable Shell | ERROR | Wrapped `agent()` internals in master `try...except` block | [RELEASED] |
 | Exp ID 041 | Phase 41: Vanilla Baseline | COMPLETE (433.9) | Removed ONNX entirely, fed sample integer deck on Step 0 | [RELEASED] |
 | Exp ID 042 | Phase 42: ONNX Brain Transplant | COMPLETE (345.6) | Injected Top-K ONNX masking logic + Dummy Model fallback check | [ACTIVE LOCK] |
+
+| Exp ID 043 | 2026-07-28 22:30 | Baseline Eval: TITAN_TRANSFORMER_LEAGUE_01.pt vs GreedyAgent | 28.3% WR (283/1000) | Confirmed massive regression from self-reported Phase 18 stats | [RELEASED] |
+
+| Exp ID 044 | 2026-07-28 22:41 | Greedy-Targeted PPO (250 ep): TITAN_GREEDY_PPO_01.pt | 46.5% WR (465/1000) | +18.2pp improvement over base. Entropy oscillated 0.09-0.90. Saved to checkpoints/. | [RELEASED] |
+
+| Exp ID 045 | 2026-07-28 23:30 | BC Strategy Decision: Top-10 Elo Replay Scraping | N/A | Pivot from PPO to BC from 1130+ Elo games. Filter: MIN_SUB_SCORE=1130. 6,479 clean episodes identified. | [ACTIVE LOCK] |
+
+| Exp ID 046 | 2026-07-29 00:08 | Top-Elo Replay Download: 9 teams, 6,479 episodes | IN PROGRESS | Sequential download at 1s/replay. ETA ~1hr 48min. Target model: TOP_ELO_BC_MODEL. | [ACTIVE LOCK] |
+

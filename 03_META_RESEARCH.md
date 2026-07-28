@@ -49,6 +49,18 @@ Due to Kaggle C++ engine state cloning limitations, MCTS is structurally impossi
 - **Loss:** -1.0
 - **Dense Rewards (Irreversible Progression):** Taking a Prize Card = +0.1, Opponent taking Prize Card = -0.1.
 
+
+
+## Phase 13: Proximal Policy Optimization (PPO)
+
+Due to Kaggle C++ engine state cloning limitations, MCTS is structurally impossible. We pivot to PPO. The network is renamed PokemonActorCritic. Rollouts are stored in PPOBuffer, Generalized Advantage Estimation (GAE) is applied, and weights are updated via PPO Clipped Objective.
+
+
+## Reward Shaping (Phase 16)
+- **Win:** +1.0
+- **Loss:** -1.0
+- **Dense Rewards (Irreversible Progression):** Taking a Prize Card = +0.1, Opponent taking Prize Card = -0.1.
+
 ## Residual Network Backbone (Phase 17)
 - **Architecture:** Replaced MLP with 4 Residual Blocks (Linear -> LayerNorm -> ReLU -> Linear -> LayerNorm -> Skip Add -> ReLU).
 - **Hidden Dimension:** 256.
@@ -58,3 +70,24 @@ Due to Kaggle C++ engine state cloning limitations, MCTS is structurally impossi
 - **Dense Progression Rewards:** Add +0.05 for Bench-filling (max 5) and +0.05 for Energy Attachment (max 3 per mon).
 - **The Safety Lock:** Implemented via max total bounds per episode to prevent infinite loop reward farming.
 - **Robustness Training (Domain Randomization):** 30% of self-play games are against a Random Agent to force OOD robustness.
+
+## Phase 47: Greedy-Targeted PPO Results
+- **Baseline (TITAN_TRANSFORMER_LEAGUE_01.pt):** 283/1000 wins (28.3% WR) vs GreedyAgent.
+- **After 250 Greedy-PPO episodes (TITAN_GREEDY_PPO_01.pt):** 465/1000 wins (46.5% WR) — +18.2pp.
+- **Architecture:** PokemonActorCritic (Transformer backbone, 120-dim state, 500-action space).
+- **Hyperparameters:** lr=1e-4, clip=0.2, entropy_coef=0.05, value_coef=0.5, 4 PPO epochs/episode.
+- **Diagnosis:** 250 episodes insufficient to reach 95% target. Entropy oscillation (0.09–0.90) suggests model is discovering but not stabilising optimal strategies.
+- **Decision:** Pivot to Behavioral Cloning from top-Elo public replays — faster path to competitive Elo than continued PPO from random init.
+
+## Phase 48: TOP_ELO_BC_MODEL Pipeline Design
+- **Data Source:** Kaggle public replay API — every team's episodes are downloadable via `kaggle competitions episodes {sub_id}` + `kaggle competitions replay {ep_id}`.
+- **Target Teams:** Top-10 leaderboard by Elo. Filter: MIN_SUB_SCORE = 1130.0 (hard cutoff).
+- **Clean Dataset:** 6,480 episodes from 9 teams. wwwwwwww team excluded (both subs below 1130).
+- **Skipped subs:** LiamK 1114.8, JZ 1061.5, Iliamna 1071.7, Yushin Ito 996.1, James Cox 654.4, titako0000 926.4, wwwwww 1126.2 & 1121.8.
+- **BC Training Design:**
+  - Parse each replay JSON → extract (obs_vector, action_taken) at every step where player == our agent's perspective.
+  - Only include steps from the **winning player** to maximise signal quality.
+  - Loss: CrossEntropy on action logits (policy head only for BC phase).
+  - Model: TOP_ELO_BC_MODEL (same PokemonActorCritic architecture, fresh or warm-started from TITAN_GREEDY_PPO_01.pt).
+- **Submission Strategy:** BC → submit → live Elo reading → PPO fine-tune only if Elo < 1000.
+- **Key Risk:** Distribution shift — BC only saw states from top-vs-top games. May struggle vs weak bots on first few ladder matches before climbing to correct Elo bracket.

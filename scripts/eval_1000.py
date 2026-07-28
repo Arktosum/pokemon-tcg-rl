@@ -67,7 +67,7 @@ def run_eval():
     wins_greedy = 0
     num_games = 1000
     
-    print(f"Starting 1000-game offline evaluation of TITAN_TRANSFORMER_LEAGUE_01.pt vs GreedyAgent...")
+    print(f"Starting 1000-game offline evaluation of TITAN_GREEDY_PPO_01.pt vs GreedyAgent...")
     for i in range(num_games):
         if i % 100 == 0:
             print(f"Game {i}/{num_games} completed...")

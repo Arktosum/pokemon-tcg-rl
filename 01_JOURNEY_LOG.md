@@ -323,3 +323,24 @@ The PPO stabilization patch successfully prevented NaN gradients and allowed the
 **Outcome / Observations:** Updated 00_DIRECTIVES.md and 03_META_RESEARCH.md with the corrected metric understanding.
 **Next Steps:** Research actual Kaggle leaderboard mechanics and inventory trained models.
 
+## ENTRY 047: Greedy-Targeted PPO Training & Win Rate Improvement
+**Timestamp:** 2026-07-28 22:41:00 +0530
+**Hypothesis / Action:** Baseline TITAN_TRANSFORMER_LEAGUE_01.pt scored 28.3% (283/1000) vs GreedyAgent. Wrote `scripts/train_greedy_ppo.py` — locks opponent to GreedyAgent 100% of time, runs 250 PPO episodes with entropy_coef=0.05, lr=1e-4. Saves as TITAN_GREEDY_PPO_01.pt.
+**Outcome / Observations:**
+- Training completed in 77.5s (250 episodes).
+- Entropy: 1.38 (ep10) -> oscillated 0.09-0.90 (learning unstable strategies).
+- TITAN_GREEDY_PPO_01.pt re-eval: **465/1000 wins (46.5% WR)** vs GreedyAgent — +18.2pp over baseline.
+- Still below 95% target. Short run insufficient to fully overcome Greedy.
+**Next Steps:** Pivot to Behavioral Cloning from top-Elo leaderboard data instead of continued PPO.
+
+## ENTRY 048: BC Strategy Decision — Top-Elo Replay Scraping
+**Timestamp:** 2026-07-29 00:00:00 +0530
+**Hypothesis / Action:** Pivoted from self-play PPO to Behavioral Cloning from top-10 leaderboard teams (1130+ Elo). Kaggle API exposes full public replays for every team. Built `scripts/download_top_elo_replays.py` with MIN_SUB_SCORE=1130 hard filter. Deleted all own-bot replays to prevent contamination.
+**Filtered submissions (excluded):** LiamK 1114.8, JZ 1061.5, Iliamna 1071.7, Yushin Ito 996.1, James Cox 654.4 sub, titako0000 926.4, wwwwwww both subs (1126.2, 1121.8).
+**Clean dataset:** 6,479 episodes from 9 of the top-10 teams (wwwwww excluded — no clean subs).
+**Target model:** TOP_ELO_BC_MODEL.
+**Strategy rationale:** BC from 1130-1155 Elo games -> submit directly -> read live Elo -> PPO fine-tune only if needed. Avoids wasted compute on PPO before knowing BC ceiling.
+**Outcome / Observations:** Download running (task-3175). ETA ~1hr 48min at 1s/replay with rate-limit backoff.
+**Next Steps:** Build BC training pipeline extracting (state_vec, action) pairs from replay JSONs. Train TOP_ELO_BC_MODEL. Submit and observe live Elo.
+
+
