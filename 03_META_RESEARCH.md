@@ -91,3 +91,13 @@ Due to Kaggle C++ engine state cloning limitations, MCTS is structurally impossi
   - Model: TOP_ELO_BC_MODEL (same PokemonActorCritic architecture, fresh or warm-started from TITAN_GREEDY_PPO_01.pt).
 - **Submission Strategy:** BC → submit → live Elo reading → PPO fine-tune only if Elo < 1000.
 - **Key Risk:** Distribution shift — BC only saw states from top-vs-top games. May struggle vs weak bots on first few ladder matches before climbing to correct Elo bracket.
+
+## Phase 70: League Reconnaissance (Kaggle Rule Differences)
+Community discussions (`/competitions/pokemon-tcg-ai-battle/discussion/708586`) confirm several critical deviations in the Kaggle Simulator compared to official Pokémon TCG rules:
+1. **Unselectable Attacks vs Declare-and-Fail**: In the simulator, if an attack effect can't be resolved (e.g. searching deck for Basic when bench is full), the attack is treated as *not selectable* from the beginning, instead of letting the player declare it and fail.
+2. **Setup Phase Forced Benching Bug**: During setup, if you have multiple Basic Pokémon in hand, the simulator does not provide an "end turn" / "done" option, forcing the agent to bench *all* Basic Pokémon in hand.
+3. **Mega Zygarde EX (Nullifying Zero)**: Target order is automatically resolved left-to-right; the player cannot choose.
+4. **Mega Lopunny EX Bug**: `Gale Thrust` doesn't register the bonus 170 damage if promoted via a Pokémon ability (like Abra TWM) instead of a standard retreat.
+5. **Telepathic Energy Bug**: Searches for *any* pokemon if attached to *any* type pokemon, and both searched pokemon go to hand.
+6. **Prize-Taking Order**: Sequentially taken instead of simultaneously. (Irrelevant to outcome since "both players taking all prizes" = draw).
+**Actionable Insight**: Our engine wrapper logic must prioritize the simulator's deterministic quirks (like returning `[]` when `maxCount == 0`) and be aware that agents might be forced to over-bench during setup. Rule-based agents must account for the Mega Lopunny damage bug if evaluating that card.

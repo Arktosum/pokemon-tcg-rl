@@ -85,4 +85,9 @@
 
 | Exp ID 047 | 2026-07-29 02:00 | Phase 49: Initial BC Scale-Up (v2) | 49.0% WR | Trained BC on 1,526 replays (115k pairs). Evaluated 490/1000 against GreedyAgent. | [RELEASED] |
 | Exp ID 048 | 2026-07-29 09:12 | Phase 49.5: Final Optimized BC Scale-Up | 50.1% WR | Trained BC on 3,658 replays (272k pairs). Applied CosineAnnealing, Weight Decay, Label Smoothing. Evaluated 501/1000 against GreedyAgent. | [RELEASED] |
-| Exp ID 049 | 2026-07-29 09:17 | Phase 50: The Gauntlet Evaluation | DONE | Benchmarked FINAL BC model. Random: 73.4%, Greedy: 44.8%, AdvancedHeuristic: 78.0%, BC_v1: 48.2%. | [ACTIVE LOCK] |
+| Exp ID 049 | 2026-07-29 09:17 | Phase 50: The Gauntlet Evaluation | DONE | Benchmarked FINAL BC model. Random: 73.4%, Greedy: 44.8%, AdvancedHeuristic: 78.0%, BC_v1: 48.2%. | [RELEASED] |
+| Exp ID 050 | 2026-07-29 13:30 | Phase 58: True Behavioral Cloning Rebuild | 41.15% Acc | Rebuilt parser to extract true vector states. Outperformed 39.10% baseline. | [RELEASED] |
+| Exp ID 051 | 2026-07-29 13:40 | Phase 59: PPO Fine-Tuning on True BC | 50.0% WR | Peaked at 72% WR but collapsed due to catastrophic forgetting. | [RELEASED] |
+| Exp ID 052 | 2026-07-29 14:00 | Phase 60: Peak-Tracking KL-Anchored PPO | DONE | Maintained peak weights via KL divergence. Gauntlet passed safely. | [RELEASED] |
+| Exp ID 053 | 2026-07-29 14:01 | Phase 61-63: Kaggle Packaging & Step 0 Deck Patch | ERROR | Successfully bundled model but hit Kaggle Validation step 0 deck query. | [RELEASED] |
+| Exp ID 054 | 2026-07-29 15:10 | Phase 64: Kaggle Validation Clear (600.0) | COMPLETE (600.0) | Fixed cg/ packaging & maxCount == 0 trap. NOTE: 600.0 is validation score (crash-check), not true Elo. | [ACTIVE LOCK] |

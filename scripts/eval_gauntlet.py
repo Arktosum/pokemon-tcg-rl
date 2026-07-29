@@ -69,20 +69,20 @@ def run_gauntlet():
 
     # Load Main Model
     main_model = PokemonActorCritic(num_layers=2).to(device)
-    final_ckpt = os.path.join(os.path.dirname(os.path.dirname(__file__)), "TOP_ELO_BC_MODEL_FINAL.pt")
+    final_ckpt = os.path.join(os.path.dirname(os.path.dirname(__file__)), "checkpoints", "TITAN_LEAGUE_PPO_ep1000.pt")
     if os.path.exists(final_ckpt):
-        checkpoint = torch.load(final_ckpt, map_location=device)
+        checkpoint = torch.load(final_ckpt, map_location=device, weights_only=True)
         main_model.load_state_dict(checkpoint.get('model_state_dict', checkpoint))
     else:
         print(f"Main Checkpoint not found: {final_ckpt}")
         return
     main_model.eval()
     
-    # Load v1 Model
+    # Load BC Baseline Model
     v1_model = PokemonActorCritic(num_layers=3).to(device)
-    v1_ckpt = os.path.join(os.path.dirname(os.path.dirname(__file__)), "checkpoints", "TOP_ELO_BC_MODEL_v1.pt")
+    v1_ckpt = os.path.join(os.path.dirname(os.path.dirname(__file__)), "checkpoints", "TOP_ELO_BC_MODEL_FINAL.pt")
     if os.path.exists(v1_ckpt):
-        checkpoint_v1 = torch.load(v1_ckpt, map_location=device)
+        checkpoint_v1 = torch.load(v1_ckpt, map_location=device, weights_only=True)
         v1_model.load_state_dict(checkpoint_v1.get('model_state_dict', checkpoint_v1))
     else:
         print(f"V1 Checkpoint not found: {v1_ckpt}")
@@ -151,7 +151,7 @@ def run_gauntlet():
     num_games = 500
     
     print(f"--- THE GAUNTLET EVALUATION ---", flush=True)
-    print(f"Main Agent: TOP_ELO_BC_MODEL_FINAL.pt", flush=True)
+    print(f"Main Agent: TITAN_LEAGUE_PPO_ep1000.pt", flush=True)
     
     results = {}
     
