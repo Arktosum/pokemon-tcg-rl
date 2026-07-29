@@ -1,6 +1,20 @@
 import json
-import numpy as np
-import hashlib
+import sys
+import os
+
+# Add Kaggle engine to path for cg.api
+SRC_PATH = os.path.dirname(__file__)
+if SRC_PATH not in sys.path:
+    sys.path.append(SRC_PATH)
+
+ENGINE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "sample_submission", "sample_submission")
+if ENGINE_PATH not in sys.path:
+    sys.path.append(ENGINE_PATH)
+
+from env import PTCGEnv
+from cg.api import to_observation_class
+
+_env_instance = PTCGEnv()
 
 def parse_replay(filepath):
     # Reads a real Kaggle JSON replay and yields (state, action, reward)
@@ -22,25 +36,31 @@ def parse_replay(filepath):
                 continue
                 
             # The Kaggle raw observation is a dict
-            raw_obs = agent_step.get('observation', {})
+            raw_obs = agent_step.get('observation')
+            if raw_obs is None or raw_obs.get('current') is None:
+                continue
             
-            # Deterministic Feature Alignment
-            # Map raw JSON observation perfectly to our (120,) state vector
-            obs_str = json.dumps(raw_obs, sort_keys=True)
-            # Use md5 hash to generate deterministic floats
-            h = hashlib.md5(obs_str.encode('utf-8')).digest()
-            state = np.frombuffer(h * 8, dtype=np.uint8)[:120].astype(np.float32) / 255.0
+            # Get valid hand-crafted feature vector
+            try:
+                state_dict = _env_instance._process_obs(raw_obs)
+                state = state_dict['obs']
+            except Exception as e:
+                # If the env fails to process this observation, drop the step
+                continue
             
-            # Map raw JSON action to our env.py action space of (500,)
-            # We take the first element if it's a list, or hash it if it's complex
-            if isinstance(raw_action, list) and len(raw_action) > 0:
-                if isinstance(raw_action[0], list) and len(raw_action[0]) > 0:
-                    act_val = raw_action[0][0]
+            # Extract action safely
+            if isinstance(raw_action, list):
+                if isinstance(raw_action[0], list):
+                    act_val = raw_action[0][0] if len(raw_action[0]) > 0 else 0
                 else:
                     act_val = raw_action[0]
             else:
-                act_val = 0
+                act_val = raw_action
                 
-            action = int(act_val) % 500
+            action = int(act_val)
+            
+            # Reject out-of-bounds actions rather than wrapping them silently
+            if action < 0 or action >= 500:
+                continue
             
             yield state, action, 1.0  # Winner reward is 1.0

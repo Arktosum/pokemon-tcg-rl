@@ -9,6 +9,7 @@ from tqdm import tqdm
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(REPO_ROOT))
 from src.env import PTCGEnv
+from src.replay_parser import parse_replay
 
 def process_replays():
     replay_dir = REPO_ROOT / "data" / "replays"
@@ -27,63 +28,9 @@ def process_replays():
     
     for replay_path in tqdm(replays):
         try:
-            with open(replay_path, "r", encoding="utf-8", errors="replace") as f:
-                data = json.load(f)
-                
-            rewards = data.get("rewards", [])
-            if len(rewards) < 2:
-                continue
-                
-            r0 = float(rewards[0] or 0)
-            r1 = float(rewards[1] or 0)
-            
-            if r0 > r1:
-                winner_idx = 0
-            elif r1 > r0:
-                winner_idx = 1
-            else:
-                continue # Draw, skip
-                
-            steps = data.get("steps", [])
-            for i, step_list in enumerate(steps):
-                if len(step_list) <= winner_idx:
-                    continue
-                    
-                winner_step = step_list[winner_idx]
-                if winner_step is None or "observation" not in winner_step or "action" not in winner_step:
-                    continue
-                    
-                action = winner_step["action"]
-                if not action or not isinstance(action, list):
-                    continue
-                    
-                # Skip step 0 (deck submission, length 60)
-                if len(action) > 5:
-                    continue
-                    
-                obs_dict = winner_step["observation"]
-                if "current" not in obs_dict:
-                    continue # Waiting for opponent
-                    
-                # Process observation to (120,) vector
-                try:
-                    obs = env._process_obs(obs_dict)
-                    state_vec = obs["obs"]
-                    action_mask = obs["action_mask"]
-                except Exception as e:
-                    continue
-                    
-                action_int = action[0]
-                
-                # Verify action is within valid bounds
-                if action_int >= 500 or action_int < 0:
-                    continue
-                    
-                # Verify action is actually masked as valid
-                if action_mask[action_int] == 1:
-                    all_states.append(state_vec)
-                    all_actions.append(action_int)
-                    
+            for state_vec, action_int, reward in parse_replay(replay_path):
+                all_states.append(state_vec)
+                all_actions.append(action_int)
         except Exception as e:
             print(f"Error processing {replay_path}: {e}")
             continue
