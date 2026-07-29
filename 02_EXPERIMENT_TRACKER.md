@@ -82,3 +82,7 @@
 
 | Exp ID 046 | 2026-07-29 00:08 | Top-Elo Replay Download: 9 teams, 6,479 episodes | IN PROGRESS | Sequential download at 1s/replay. ETA ~1hr 48min. Target model: TOP_ELO_BC_MODEL. | [ACTIVE LOCK] |
 
+
+| Exp ID 047 | 2026-07-29 02:00 | Phase 49: Initial BC Scale-Up (v2) | 49.0% WR | Trained BC on 1,526 replays (115k pairs). Evaluated 490/1000 against GreedyAgent. | [RELEASED] |
+| Exp ID 048 | 2026-07-29 09:12 | Phase 49.5: Final Optimized BC Scale-Up | 50.1% WR | Trained BC on 3,658 replays (272k pairs). Applied CosineAnnealing, Weight Decay, Label Smoothing. Evaluated 501/1000 against GreedyAgent. | [RELEASED] |
+| Exp ID 049 | 2026-07-29 09:17 | Phase 50: The Gauntlet Evaluation | DONE | Benchmarked FINAL BC model. Random: 73.4%, Greedy: 44.8%, AdvancedHeuristic: 78.0%, BC_v1: 48.2%. | [ACTIVE LOCK] |

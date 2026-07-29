@@ -48,7 +48,7 @@ def play_match(env, model, greedy_agent):
 def run_eval():
     env = PTCGEnv()
     model = PokemonActorCritic()
-    ckpt_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "checkpoints", "TITAN_GREEDY_PPO_01.pt")
+    ckpt_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "checkpoints", "TOP_ELO_BC_MODEL_FINAL.pt")
     
     if os.path.exists(ckpt_path):
         checkpoint = torch.load(ckpt_path, map_location='cpu')
@@ -67,7 +67,7 @@ def run_eval():
     wins_greedy = 0
     num_games = 1000
     
-    print(f"Starting 1000-game offline evaluation of TITAN_GREEDY_PPO_01.pt vs GreedyAgent...")
+    print(f"Starting 1000-game offline evaluation of TOP_ELO_BC_MODEL_FINAL.pt vs GreedyAgent...")
     for i in range(num_games):
         if i % 100 == 0:
             print(f"Game {i}/{num_games} completed...")

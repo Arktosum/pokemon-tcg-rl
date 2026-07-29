@@ -344,3 +344,13 @@ The PPO stabilization patch successfully prevented NaN gradients and allowed the
 **Next Steps:** Build BC training pipeline extracting (state_vec, action) pairs from replay JSONs. Train TOP_ELO_BC_MODEL. Submit and observe live Elo.
 
 
+
+## ENTRY 049: Final Optimized BC Scale-Up & Evaluation Gauntlet
+**Timestamp:** 2026-07-29 09:36:00 +0530
+**Hypothesis / Action:** Processed 3,658 high-Elo replay JSONs, extracting 272,533 state-action pairs (80/20 train/val split). Applied highly optimized Behavioral Cloning to train TOP_ELO_BC_MODEL_FINAL.pt with Label Smoothing (0.1), CosineAnnealingLR, Weight Decay (1e-4), and Early Stopping (Patience=5). Training halted at Epoch 48. Then built an AdvancedHeuristicAgent recognizing OptionType semantics to prioritize Attacks, Evolutions, Supporter plays, and Energy attachments. Ran a 2,000-game Gauntlet.
+**Outcome / Observations:**
+- Final BC vs RandomAgent: 73.4% WR
+- Final BC vs GreedyAgent: 44.8% WR
+- Final BC vs AdvancedHeuristicAgent: 78.0% WR
+- Final BC vs BC_v1: 48.2% WR
+**Next Steps:** Proceed to BC-Anchored PPO curriculum learning to break the heuristic ceiling, starting explicitly with the GreedyAgent.
