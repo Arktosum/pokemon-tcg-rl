@@ -1,4 +1,4 @@
 # 00_ENV_MANIFEST
 **LAST UPDATED:** 2026-07-30 12:32:28 +05:30
-* **Hardware Target:** Pending User Confirmation (Defaulting to Local CPU/Kaggle CPU for now)
-* **VRAM/RAM Limit:** Local (TBD) / Kaggle (12.2 GiB RAM, 11.8 GiB HDD)
+* **Hardware Target:** Local RTX 3050 (4GB/8GB VRAM) with i7 CPU
+* **VRAM/RAM Limit:** Strictly bound to RTX 3050 constraints. RL batches must be small.

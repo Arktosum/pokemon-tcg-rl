@@ -28,8 +28,13 @@ else:
     lib_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "libcg.so")
 lib = ctypes.cdll.LoadLibrary(lib_path)
 
-lib.GameInitialize()
-
+if not getattr(lib, '_initialized', False):
+    try:
+        lib.GameInitialize()
+    except OSError as e:
+        # Ignore C++ exception if already initialized
+        pass
+    lib._initialized = True
 lib.BattleStart.restype = StartData
 lib.BattleStart.argtypes = [ctypes.POINTER(ctypes.c_int)]
 

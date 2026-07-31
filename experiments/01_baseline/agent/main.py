@@ -12,7 +12,12 @@ def read_deck_csv() -> list[int]:
     """
     file_path = "deck.csv"
     if not os.path.exists(file_path):
-        file_path = "/kaggle_simulations/agent/" + file_path
+        if '__file__' in globals():
+            file_path = os.path.join(os.path.dirname(__file__), "deck.csv")
+        else:
+            file_path = os.path.join(os.getcwd(), 'experiments', '01_baseline', 'agent', "deck.csv")
+    if not os.path.exists(file_path):
+        file_path = "/kaggle_simulations/agent/deck.csv"
     with open(file_path, "r") as file:
         csv = file.read().split("\n")
     deck = []
@@ -35,7 +40,5 @@ def agent(obs_dict: dict) -> list[int]:
         # The deck is a list of 60 card IDs.
         # The deck must comply with the Pokémon Trading Card Game rules.
         return read_deck_csv()
-    
-        env.cg.api.to_observation_class
     
     return random.sample(list(range(len(obs.select.option))), obs.select.maxCount)  # select randomly

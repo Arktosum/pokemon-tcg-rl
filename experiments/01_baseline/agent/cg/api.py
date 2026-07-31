@@ -1,4 +1,4 @@
-﻿from dataclasses import dataclass
+from dataclasses import dataclass
 from enum import IntEnum
 import json
 import ctypes
@@ -622,7 +622,10 @@ def search_step(search_id: int, select: list[int]) -> SearchState:
         elif result.error == 30:
             raise ValueError("agent_ptr broken.")
         else:
-            raise RuntimeError()
+            print(f"\n[DEBUG cg/api.py] search_step failed!")
+            print(f"[DEBUG cg/api.py] raw C++ json: {bs}")
+            print(f"[DEBUG cg/api.py] result.error code: {result.error}")
+            raise RuntimeError(f"Unknown API error code: {result.error}. Raw JSON: {bs}")
     
     return result.state
 

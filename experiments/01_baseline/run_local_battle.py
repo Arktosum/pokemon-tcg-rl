@@ -3,17 +3,20 @@ from datetime import datetime
 from kaggle_environments import make, environments
 
 if __name__ == "__main__":
-    print("Available environments:")
-    for env_name in environments:
-        print(f" - {env_name}")
+    # print("Available environments:")
+    # for env_name in environments:
+    #     print(f" - {env_name}")
     
     target_env = "cabt"
     
+    import os
     print(f"\nAttempting to make environment: {target_env}")
     try:
         env = make(target_env, debug=True)
         print("Starting battle...")
-        steps = env.run(["agent/main.py", "agent/main.py"])
+        agent1 = os.path.join(os.path.dirname(__file__), "agent_mcts.py")
+        agent2 = os.path.join(os.path.dirname(__file__), "agent", "main.py")
+        steps = env.run([agent1, agent2])
         print(f"Battle finished in {len(steps)} steps.")
         
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

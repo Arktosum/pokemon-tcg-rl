@@ -22,6 +22,16 @@ all_card = all_card_data()
 card_count = max(all_card, key=lambda c: c.cardId).cardId + 1
 attack_count = max(all_attack(), key=lambda a: a.attackId).attackId + 1
 
+# Dynamically compute the maximum possible index (encoder_size)
+# 12 pokemon slots * (1 + 3 * card_count)
+# + 2 player slots * 7
+# + 1 hand * card_count
+# + 1 deck * card_count (approximate buffer)
+encoder_size = 12 * (1 + 3 * card_count) + 2 * 7 + 2 * card_count + 1000
+
+# Action decoder uses the same namespace
+decoder_size = encoder_size
+
 # Decoder constants
 decoder_main_feature = 8 # Feature count of SelectContext.Main
 decoder_attack_offset = 14 # First index of Attack feature
@@ -84,7 +94,7 @@ def add_player(sv: SparseVector, ps: PlayerState):
     sv.add_single(len(ps.discard) / 60.0)
     sv.add_single(ps.handCount / 8.0)
     sv.add_single(len(ps.bench) / 5.0)
-    sv.add(len(ps.prize), 1.0)
+    sv.add(sum(1 for p in ps.prize if p is not None), 1.0)
     sv.add_pos(7) # Shift by max prize + flags
 
     sv.add_single(ps.poisoned)
