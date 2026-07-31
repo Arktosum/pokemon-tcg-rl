@@ -1,0 +1,9 @@
+﻿--- SCENARIO A: A Hand with 3 Cards ---
+Input (3 cards): [15, 8, 50]
+Output Shape: torch.Size([1, 4])
+Output Values: [[-0.9564186  3.0853958 -1.9286604  2.1689045]]
+
+--- SCENARIO B: A Hand with 6 Cards ---
+Input (6 cards): [15, 8, 50, 22, 10, 99]
+Output Shape: torch.Size([1, 4])
+Output Values: [[-0.7825917  3.267473  -4.665531   2.9960256]]
