@@ -2,3 +2,4 @@ pokemon-tcg-ai-battle
 *.json
 *.pyc
 *.log
+*.pt
