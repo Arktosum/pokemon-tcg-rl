@@ -4,7 +4,7 @@ import json
 import torch
 import torch.nn as nn
 
-from agent.cg.api import (
+from cg.api import (
     to_observation_class,
     all_card_data,
     Observation,
@@ -23,11 +23,11 @@ card_count = max(all_card, key=lambda c: c.cardId).cardId + 1
 attack_count = max(all_attack(), key=lambda a: a.attackId).attackId + 1
 
 # Dynamically compute the maximum possible index (encoder_size)
-# 12 pokemon slots * (1 + 3 * card_count)
+# 12 pokemon slots * (2 + 3 * card_count)
 # + 2 player slots * 7
 # + 1 hand * card_count
 # + 1 deck * card_count (approximate buffer)
-encoder_size = 12 * (1 + 3 * card_count) + 2 * 7 + 2 * card_count + 1000
+encoder_size = 12 * (2 + 3 * card_count) + 2 * 7 + 2 * card_count + 1000
 
 # Action decoder uses the same namespace
 decoder_size = encoder_size
@@ -209,29 +209,29 @@ def get_decoder_input(obs: Observation, actions: list[list[int]]) -> SparseVecto
                 case OptionType.END: sv.add(1, 1)
                 case OptionType.YES: sv.add(2, 1)
                 case OptionType.NO: sv.add(3, 1)
-                case OptionType.SPECIAL_CONDITION: sv.add(4 + o.specialConditionType, 1)
-                case OptionType.NUMBER: sv.add(9 + min(o.number, 4), 1)
-                case OptionType.ATTACK: sv.add(decoder_attack_offset + o.attackId, 1)
-                case OptionType.PLAY: decoder_main(sv, 0, get_card(obs, AreaType.HAND, o.index, your_index))
+                case OptionType.SPECIAL_CONDITION: sv.add(4 + (o.specialConditionType or 0), 1)
+                case OptionType.NUMBER: sv.add(9 + min(o.number or 0, 4), 1)
+                case OptionType.ATTACK: sv.add(decoder_attack_offset + (o.attackId or 0), 1)
+                case OptionType.PLAY: decoder_main(sv, 0, get_card(obs, AreaType.HAND, (o.index or 0), your_index))
                 case OptionType.ATTACH:
-                    decoder_main(sv, 1, get_card(obs, o.area, o.index, your_index))
-                    decoder_main(sv, 2, get_card(obs, o.inPlayArea, o.inPlayIndex, your_index))
+                    decoder_main(sv, 1, get_card(obs, o.area, (o.index or 0), your_index))
+                    decoder_main(sv, 2, get_card(obs, o.inPlayArea, (o.inPlayIndex or 0), your_index))
                 case OptionType.EVOLVE:
-                    decoder_main(sv, 3, get_card(obs, o.area, o.index, your_index))
-                    decoder_main(sv, 4, get_card(obs, o.inPlayArea, o.inPlayIndex, your_index))
-                case OptionType.ABILITY: decoder_main(sv, 5, get_card(obs, o.area, o.index, your_index))
-                case OptionType.DISCARD: decoder_main(sv, 6, get_card(obs, o.area, o.index, your_index))
+                    decoder_main(sv, 3, get_card(obs, o.area, (o.index or 0), your_index))
+                    decoder_main(sv, 4, get_card(obs, o.inPlayArea, (o.inPlayIndex or 0), your_index))
+                case OptionType.ABILITY: decoder_main(sv, 5, get_card(obs, o.area, (o.index or 0), your_index))
+                case OptionType.DISCARD: decoder_main(sv, 6, get_card(obs, o.area, (o.index or 0), your_index))
                 case OptionType.RETREAT: decoder_main(sv, 7, ps.active[0] if len(ps.active) > 0 else None)
-                case OptionType.CARD: decoder_card(sv, context, get_card(obs, o.area, o.index, o.playerIndex))
+                case OptionType.CARD: decoder_card(sv, context, get_card(obs, o.area, (o.index or 0), o.playerIndex))
                 case OptionType.TOOL_CARD:
-                    card = get_card(obs, o.area, o.index, o.playerIndex)
-                    if card is not None and hasattr(card, 'tools') and len(card.tools) > o.toolIndex:
-                        decoder_card(sv, context, card.tools[o.toolIndex])
+                    card = get_card(obs, o.area, (o.index or 0), o.playerIndex)
+                    if card is not None and hasattr(card, 'tools') and len(card.tools) > (o.toolIndex or 0):
+                        decoder_card(sv, context, card.tools[(o.toolIndex or 0)])
                 case OptionType.ENERGY_CARD | OptionType.ENERGY:
-                    card = get_card(obs, o.area, o.index, o.playerIndex)
-                    if card is not None and hasattr(card, 'energyCards') and len(card.energyCards) > o.energyIndex:
-                        decoder_card(sv, context, card.energyCards[o.energyIndex])
-                case OptionType.SKILL: decoder_card_id(sv, context, o.cardId)
+                    card = get_card(obs, o.area, (o.index or 0), o.playerIndex)
+                    if card is not None and hasattr(card, 'energyCards') and len(card.energyCards) > (o.energyIndex or 0):
+                        decoder_card(sv, context, card.energyCards[(o.energyIndex or 0)])
+                case OptionType.SKILL: decoder_card_id(sv, context, (o.cardId or 0))
     return sv
 
 

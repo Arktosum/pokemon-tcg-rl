@@ -9,256 +9,256 @@ from .utils import to_dataclass, json_to_dataclass
 #region Enums
 
 class AreaType(IntEnum):
-    DECK = 1,
-    HAND = 2,
-    DISCARD = 3, # Discard Pile
-    ACTIVE = 4, # Active Spot
-    BENCH = 5,
-    PRIZE = 6,
-    STADIUM = 7,
-    ENERGY = 8,
-    TOOL = 9,
-    PRE_EVOLUTION = 10, # The pre-evolved form of the Pokémon in play.
-    PLAYER = 11,
-    LOOKING = 12, # The card you are looking.
+    DECK = 1
+    HAND = 2
+    DISCARD = 3 # Discard Pile
+    ACTIVE = 4 # Active Spot
+    BENCH = 5
+    PRIZE = 6
+    STADIUM = 7
+    ENERGY = 8
+    TOOL = 9
+    PRE_EVOLUTION = 10 # The pre-evolved form of the Pokémon in play.
+    PLAYER = 11
+    LOOKING = 12 # The card you are looking.
 
 class EnergyType(IntEnum):
-    COLORLESS = 0,
-    GRASS = 1,
-    FIRE = 2,
-    WATER = 3,
-    LIGHTNING = 4,
-    PSYCHIC = 5,
-    FIGHTING = 6,
-    DARKNESS = 7,
-    METAL = 8,
-    DRAGON = 9,
-    RAINBOW = 10, # Every Types
-    TEAM_ROCKET = 11, # PSYCHIC and DARKNESS 
+    COLORLESS = 0
+    GRASS = 1
+    FIRE = 2
+    WATER = 3
+    LIGHTNING = 4
+    PSYCHIC = 5
+    FIGHTING = 6
+    DARKNESS = 7
+    METAL = 8
+    DRAGON = 9
+    RAINBOW = 10 # Every Types
+    TEAM_ROCKET = 11 # PSYCHIC and DARKNESS 
 
 class CardType(IntEnum):
-    POKEMON = 0,
-    ITEM = 1,
-    TOOL = 2, # Pokémon Tool
-    SUPPORTER = 3,
-    STADIUM = 4,
-    BASIC_ENERGY = 5,
-    SPECIAL_ENERGY = 6,
+    POKEMON = 0
+    ITEM = 1
+    TOOL = 2 # Pokémon Tool
+    SUPPORTER = 3
+    STADIUM = 4
+    BASIC_ENERGY = 5
+    SPECIAL_ENERGY = 6
 
 class SpecialConditionType(IntEnum):
-    POISON = 0,
-    BURN = 1,
-    SLEEP = 2,
-    PARALYZE = 3,
-    CONFUSE = 4,
+    POISON = 0
+    BURN = 1
+    SLEEP = 2
+    PARALYZE = 3
+    CONFUSE = 4
 
 class SelectType(IntEnum):
-    MAIN = 0, # OptionType: PLAY, ATTACH, EVOLVE, ABILITY, DISCARD, RETREAT, ATTACK, END
-    CARD = 1, # OptionType: CARD
-    ATTACHED_CARD = 2, # OptionType: TOOL_CARD, ENERGY_CARD
-    CARD_OR_ATTACHED_CARD = 3, # OptionType: CARD, TOOL_CARD, ENERGY_CARD
-    ENERGY = 4, # OptionType: ENERGY
-    SKILL = 5, # OptionType: SKILL
-    ATTACK = 6, # OptionType: ATTACK
-    EVOLVE = 7, # OptionType: EVOLVE
-    COUNT = 8, # OptionType: NUMBER
-    YES_NO = 9, # OptionType: YES, NO
-    SPECIAL_CONDITION = 10, # OptionType: SPECIAL_CONDITION
+    MAIN = 0 # OptionType: PLAY, ATTACH, EVOLVE, ABILITY, DISCARD, RETREAT, ATTACK, END
+    CARD = 1 # OptionType: CARD
+    ATTACHED_CARD = 2 # OptionType: TOOL_CARD, ENERGY_CARD
+    CARD_OR_ATTACHED_CARD = 3 # OptionType: CARD, TOOL_CARD, ENERGY_CARD
+    ENERGY = 4 # OptionType: ENERGY
+    SKILL = 5 # OptionType: SKILL
+    ATTACK = 6 # OptionType: ATTACK
+    EVOLVE = 7 # OptionType: EVOLVE
+    COUNT = 8 # OptionType: NUMBER
+    YES_NO = 9 # OptionType: YES, NO
+    SPECIAL_CONDITION = 10 # OptionType: SPECIAL_CONDITION
     
 class SelectContext(IntEnum):
-    MAIN = 0, # Main. Main selection.
-    SETUP_ACTIVE_POKEMON = 1, # Card. Select the Pokémon to put into your Active Spot during Set Up.
-    SETUP_BENCH_POKEMON = 2, # Card. Select the Pokémon to put onto your Bench during Set Up.
-    SWITCH = 3, # Card. Select the Pokémon to swap with the one in your Active Spot.
-    TO_ACTIVE = 4, # Card. Select the Pokémon to put into your Active Spot.
-    TO_BENCH = 5, # Card. Select the Pokémon to put onto your Bench.
-    TO_FIELD = 6, # Card. Select the Pokémon to put into play.
-    TO_HAND = 7, # Card. Select the card to add to your hand.
-    DISCARD = 8, # Card. Select the card to discard.
-    TO_DECK = 9, # Card. Select the card to return to your deck.
-    TO_DECK_BOTTOM = 10, # Card. Select the card to return to the bottom of your deck.
-    TO_PRIZE = 11, # Card. Select the card to add to your prize.
-    NOT_MOVE = 12, # Card. Select the card to remain where it is.
-    DAMAGE_COUNTER = 13, # Card. Select the Pokémon to place damage counters on.
-    DAMAGE_COUNTER_ANY = 14, # Card. Select the Pokémon to place damage counters on using the effect that lets you place them as you like.
-    DAMAGE = 15, # Card. Select the Pokémon to deal damage.
-    REMOVE_DAMAGE_COUNTER = 16, # Card. Select the Pokémon to remove damage counters from.
-    HEAL = 17, # Card. Select the Pokémon to heal.
-    EVOLVES_FROM = 18, # Card. Select the Pokémon to evolve from.
-    EVOLVES_TO = 19, # Card. Select the Pokémon to evolve into.
-    DEVOLVE = 20, # Card. Select the Pokémon to devolve.
-    ATTACH_FROM = 21, # Card. Select the Pokémon to attach the card to.
-    ATTACH_TO = 22, # Card. Select the card to attach to the Pokémon.
-    DETACH_FROM = 23, # Card. Select the Pokémon to remove the card from.
-    LOOK = 24, # Card. Select the card to look at.
-    EFFECT_TARGET = 25, # Card. Select the card to apply the effect to.
-    DISCARD_ENERGY_CARD = 26, # AttachedCard. Select the Energy card to discard.
-    DISCARD_TOOL_CARD = 27, # AttachedCard. Select the Pokémon tool to trash.
-    SWITCH_ENERGY_CARD = 28, # AttachedCard. Select the energy card to replace.
-    DISCARD_CARD_OR_ATTACHED_CARD = 29, # CardOrAttachedCard. Select the card to discard.
-    DISCARD_ENERGY = 30, # Energy. Select the energy to discard.
-    TO_HAND_ENERGY = 31, # Energy. Select the energy to return to your hand.
-    TO_DECK_ENERGY = 32, # Energy. Select the energy to return to the deck.
-    SWITCH_ENERGY = 33, # Energy. Select the energy to switch.
-    SKILL_ORDER = 34, # Skill. Select the order of effect activation.
-    ATTACK = 35, # Attack. Select the Attack to use.
-    DISABLE_ATTACK = 36, # Attack. Select the Attack to disable.
-    EVOLVE = 37, # Evolve. Select the Pokémon that is the evolution source and the Pokémon that is the evolution target.
-    DRAW_COUNT = 38, # Count. Select how many cards to draw.
-    DAMAGE_COUNTER_COUNT = 39, # Count. Select how many damage counters to place.
-    REMOVE_DAMAGE_COUNTER_COUNT = 40, # Count. Select how many damage counters to remove.
-    IS_FIRST = 41, # YesNo. Would you like to go first?
-    MULLIGAN = 42, # YesNo. Would you like to redraw the cards?
-    ACTIVATE = 43, # YesNo. Would you like to activate the effect?
-    FIRST_EFFECT = 44, # YesNo. Would you like to select the first effect?
-    MORE_DEVOLVE = 45, # YesNo. Do you want to devolve it further?
-    COIN_HEAD = 46, # YesNo. Do you want to choose heads?
-    AFFECT_SPECIAL_CONDITION = 47, # SpecialCondition. Choose the special condition to affect.
-    RECOVER_SPECIAL_CONDITION = 48, # SpecialCondition. Choose the special condition to recover.
+    MAIN = 0 # Main. Main selection.
+    SETUP_ACTIVE_POKEMON = 1 # Card. Select the Pokémon to put into your Active Spot during Set Up.
+    SETUP_BENCH_POKEMON = 2 # Card. Select the Pokémon to put onto your Bench during Set Up.
+    SWITCH = 3 # Card. Select the Pokémon to swap with the one in your Active Spot.
+    TO_ACTIVE = 4 # Card. Select the Pokémon to put into your Active Spot.
+    TO_BENCH = 5 # Card. Select the Pokémon to put onto your Bench.
+    TO_FIELD = 6 # Card. Select the Pokémon to put into play.
+    TO_HAND = 7 # Card. Select the card to add to your hand.
+    DISCARD = 8 # Card. Select the card to discard.
+    TO_DECK = 9 # Card. Select the card to return to your deck.
+    TO_DECK_BOTTOM = 10 # Card. Select the card to return to the bottom of your deck.
+    TO_PRIZE = 11 # Card. Select the card to add to your prize.
+    NOT_MOVE = 12 # Card. Select the card to remain where it is.
+    DAMAGE_COUNTER = 13 # Card. Select the Pokémon to place damage counters on.
+    DAMAGE_COUNTER_ANY = 14 # Card. Select the Pokémon to place damage counters on using the effect that lets you place them as you like.
+    DAMAGE = 15 # Card. Select the Pokémon to deal damage.
+    REMOVE_DAMAGE_COUNTER = 16 # Card. Select the Pokémon to remove damage counters from.
+    HEAL = 17 # Card. Select the Pokémon to heal.
+    EVOLVES_FROM = 18 # Card. Select the Pokémon to evolve from.
+    EVOLVES_TO = 19 # Card. Select the Pokémon to evolve into.
+    DEVOLVE = 20 # Card. Select the Pokémon to devolve.
+    ATTACH_FROM = 21 # Card. Select the Pokémon to attach the card to.
+    ATTACH_TO = 22 # Card. Select the card to attach to the Pokémon.
+    DETACH_FROM = 23 # Card. Select the Pokémon to remove the card from.
+    LOOK = 24 # Card. Select the card to look at.
+    EFFECT_TARGET = 25 # Card. Select the card to apply the effect to.
+    DISCARD_ENERGY_CARD = 26 # AttachedCard. Select the Energy card to discard.
+    DISCARD_TOOL_CARD = 27 # AttachedCard. Select the Pokémon tool to trash.
+    SWITCH_ENERGY_CARD = 28 # AttachedCard. Select the energy card to replace.
+    DISCARD_CARD_OR_ATTACHED_CARD = 29 # CardOrAttachedCard. Select the card to discard.
+    DISCARD_ENERGY = 30 # Energy. Select the energy to discard.
+    TO_HAND_ENERGY = 31 # Energy. Select the energy to return to your hand.
+    TO_DECK_ENERGY = 32 # Energy. Select the energy to return to the deck.
+    SWITCH_ENERGY = 33 # Energy. Select the energy to switch.
+    SKILL_ORDER = 34 # Skill. Select the order of effect activation.
+    ATTACK = 35 # Attack. Select the Attack to use.
+    DISABLE_ATTACK = 36 # Attack. Select the Attack to disable.
+    EVOLVE = 37 # Evolve. Select the Pokémon that is the evolution source and the Pokémon that is the evolution target.
+    DRAW_COUNT = 38 # Count. Select how many cards to draw.
+    DAMAGE_COUNTER_COUNT = 39 # Count. Select how many damage counters to place.
+    REMOVE_DAMAGE_COUNTER_COUNT = 40 # Count. Select how many damage counters to remove.
+    IS_FIRST = 41 # YesNo. Would you like to go first?
+    MULLIGAN = 42 # YesNo. Would you like to redraw the cards?
+    ACTIVATE = 43 # YesNo. Would you like to activate the effect?
+    FIRST_EFFECT = 44 # YesNo. Would you like to select the first effect?
+    MORE_DEVOLVE = 45 # YesNo. Do you want to devolve it further?
+    COIN_HEAD = 46 # YesNo. Do you want to choose heads?
+    AFFECT_SPECIAL_CONDITION = 47 # SpecialCondition. Choose the special condition to affect.
+    RECOVER_SPECIAL_CONDITION = 48 # SpecialCondition. Choose the special condition to recover.
     # Please note that new elements may be appended to the Enum during the competition.
 
 class OptionType(IntEnum):
     # number (int):Count.
-    NUMBER = 0, # Number to select.
+    NUMBER = 0 # Number to select.
 
-    YES = 1, # Select Yes.
+    YES = 1 # Select Yes.
 
-    NO = 2, # Select No.
+    NO = 2 # Select No.
 
     # area (AreaType):Area where the card is located.
     # index (int):Index within the area.
     # playerIndex (int):The owning player of the card.
-    CARD = 3, # Card to select.
+    CARD = 3 # Card to select.
 
     # area (AreaType):Area of the attached Pokémon.
     # index (int):Index within the area of the attached Pokémon.
     # playerIndex (int):The owning player of the Pokémon.
     # toolIndex (int):Index within the tool.
-    TOOL_CARD = 4, # Pokémon Tool Card to select.
+    TOOL_CARD = 4 # Pokémon Tool Card to select.
 
     # area (AreaType):Area of the attached Pokémon.
     # index (int):Index within the area of the attached Pokémon.
     # playerIndex (int):The owning player of the Pokémon.
     # energyIndex (int):Index within the energy card.
-    ENERGY_CARD = 5, # Energy Card to select.
+    ENERGY_CARD = 5 # Energy Card to select.
 
     # area (AreaType):Area of the attached Pokémon.
     # index (int):Index within the area of the attached Pokémon.
     # playerIndex (int):The owning player of the Pokémon.
     # energyIndex (int):Index within the energy card.
     # count (int):How many energy units does it correspond to?
-    ENERGY = 6, # Energy to select.
+    ENERGY = 6 # Energy to select.
 
     # index (int):Index within the hand.
-    PLAY = 7, # Play a card from your hand.
+    PLAY = 7 # Play a card from your hand.
 
     # area (AreaType):Area of the card to attach.
     # index (int):Index within the area of the card to attach.
     # inPlayArea (AreaType):Area of the Pokémon on the field.
     # inPlayIndex (int):Index within the area of the Pokémon on the field.
-    ATTACH = 8, # Attach a card to a Pokémon.
+    ATTACH = 8 # Attach a card to a Pokémon.
 
     # area (AreaType):Area of the evolved card.
     # index (int):Index within the area of the evolved card.
     # inPlayArea (AreaType):Area of the Pokémon on the field.
     # inPlayIndex (int):Index within the area of the Pokémon on the field.
-    EVOLVE = 9, # Select an Evolution.
+    EVOLVE = 9 # Select an Evolution.
 
     # area (AreaType):Area where the card is located.
     # index (int):Index within the area.
-    ABILITY = 10, # Use an Ability.
+    ABILITY = 10 # Use an Ability.
 
     # area (AreaType):Area where the card is located.
     # index (int):Index within the area.
-    DISCARD = 11, # Discard a card in play.
+    DISCARD = 11 # Discard a card in play.
 
-    RETREAT = 12, # Retreat Active Pokémon.
+    RETREAT = 12 # Retreat Active Pokémon.
 
     # attackId (int):Attack ID
-    ATTACK = 13, # Select an Attack.
+    ATTACK = 13 # Select an Attack.
 
-    END = 14, # Turn End.
+    END = 14 # Turn End.
 
     # cardId (int):Card ID. When the Card ID is 0, it means handling a Special Condition.
     # serial (int):Card serial
-    SKILL = 15, # Select the order of card skills.
+    SKILL = 15 # Select the order of card skills.
 
     # specialConditionType (SpecialConditionType):Special Condition Type
-    SPECIAL_CONDITION = 16, # Select the Special Condition.
+    SPECIAL_CONDITION = 16 # Select the Special Condition.
 
 class LogType(IntEnum):
     # playerIndex (int)
-    SHUFFLE = 0, # Shuffle deck.
+    SHUFFLE = 0 # Shuffle deck.
 
     # playerIndex (int)
     # hasBasicPokemon (bool):If false, then no Basic Pokémon exist.
-    HAS_BASIC_POKEMON = 1,
+    HAS_BASIC_POKEMON = 1
 
     # playerIndex (int)
-    TURN_START = 2, # Start turn.
+    TURN_START = 2 # Start turn.
 
     # playerIndex (int)
-    TURN_END = 3, # End turn.
+    TURN_END = 3 # End turn.
 
     # playerIndex (int)
     # cardId (int):Drawn card ID
     # serial (int):Drawn card serial
-    DRAW = 4, # Drew a card from deck.
+    DRAW = 4 # Drew a card from deck.
 
     # playerIndex (int)
-    DRAW_REVERSE = 5, # Your opponent drew a card from their deck.
+    DRAW_REVERSE = 5 # Your opponent drew a card from their deck.
 
     # playerIndex (int)
     # cardId (int):Moved card. ID
     # serial (int):Moved card. serial
     # fromArea (AreaType):Area before movement.
     # toArea (AreaType):Area after movement.
-    MOVE_CARD = 6, # A card moved.
+    MOVE_CARD = 6 # A card moved.
 
     # playerIndex (int)
     # fromArea (AreaType):Area before movement.
     # toArea (AreaType):Area after movement.
-    MOVE_CARD_REVERSE = 7, # A card moved face-down.
+    MOVE_CARD_REVERSE = 7 # A card moved face-down.
 
     # playerIndex (int)
     # cardIdActive (int):Moving to the Bench Pokémon ID
     # serialActive (int):Moving to the Bench Pokémon serial
     # cardIdBench (int):Moving to the Active Pokémon ID
     # serialBench (int):Moving to the Active Pokémon serial
-    SWITCH = 8, # Pokémon were switched.
+    SWITCH = 8 # Pokémon were switched.
 
     # playerIndex (int)
     # cardIdBefore (int):Pokémon before change. ID
     # serialBefore (int):Pokémon before change. serial
     # cardIdAfter (int):Pokémon after change. ID
     # serialAfter (int):Pokémon after change. serial
-    CHANGE = 9, # Change the Pokémon.
+    CHANGE = 9 # Change the Pokémon.
 
     # playerIndex (int)
     # cardId (int):Played card ID
     # serial (int):Played card serial
-    PLAY = 10, # Played a card from hand.
+    PLAY = 10 # Played a card from hand.
 
     # playerIndex (int)
     # cardId (int):Attached card ID
     # serial (int):Attached card serial
     # cardIdTarget (int):Pokémon card ID
     # serialTarget (int):Pokémon card serial
-    ATTACH = 11, # Attached a card to a Pokémon.
+    ATTACH = 11 # Attached a card to a Pokémon.
 
     # playerIndex (int)
     # cardId (int):Evolved card ID
     # serial (int):Evolved card serial
     # cardIdTarget (int):Pokémon card ID
     # serialTarget (int):Pokémon card serial
-    EVOLVE = 12, # Evolved a Pokémon.
+    EVOLVE = 12 # Evolved a Pokémon.
 
     # playerIndex (int)
     # cardId (int):Devolved card ID
     # serial (int):Devolved card serial
     # cardIdTarget (int):Pokémon card ID
     # serialTarget (int):Pokémon card serial
-    DEVOLVE = 13, # Devolved a Pokémon.
+    DEVOLVE = 13 # Devolved a Pokémon.
 
     # playerIndex (int)
     # cardId (int):Attached card ID
@@ -267,58 +267,58 @@ class LogType(IntEnum):
     # serialBefore (int):Pokémon that were attached with cards. serial
     # cardIdAfter (int):Pokémon that were newly attached with cards. ID
     # serialAfter (int):Pokémon that were newly attached with cards. serial
-    MOVE_ATTACHED = 14, # Move the attached card.
+    MOVE_ATTACHED = 14 # Move the attached card.
 
     # playerIndex (int)
     # cardId (int):Pokémon that use attack. ID
     # serial (int):Pokémon that use attack. serial
     # attackId (int):Attack ID
-    ATTACK = 15, # Pokémon Attack.
+    ATTACK = 15 # Pokémon Attack.
 
     # playerIndex (int)
     # cardId (int):HP changed card ID
     # serial (int):HP changed card serial
     # value (int):Amount of change.
     # putDamageCounter (bool):True if the HP change is due to the effect of placing a damage counter.
-    HP_CHANGE = 16, # A Pokémon’s HP changed.
+    HP_CHANGE = 16 # A Pokémon’s HP changed.
 
     # playerIndex (int)
     # isRecover (bool):If true, the special condition has been recovered.
     # cardId (int): ID
     # serial (int): serial
-    POISONED = 17, # Poisoned.
+    POISONED = 17 # Poisoned.
 
     # playerIndex (int)
     # isRecover (bool):If true, the special condition has been recovered.
     # cardId (int): ID
     # serial (int): serial
-    BURNED = 18, # Burned.
+    BURNED = 18 # Burned.
 
     # playerIndex (int)
     # isRecover (bool):If true, the special condition has been recovered.
     # cardId (int): ID
     # serial (int): serial
-    ASLEEP = 19, # Fell asleep.
+    ASLEEP = 19 # Fell asleep.
 
     # playerIndex (int)
     # isRecover (bool):If true, the special condition has been recovered.
     # cardId (int): ID
     # serial (int): serial
-    PARALYZED = 20, # Paralyzed.
+    PARALYZED = 20 # Paralyzed.
 
     # playerIndex (int)
     # isRecover (bool):If true, the special condition has been recovered.
     # cardId (int): ID
     # serial (int): serial
-    CONFUSED = 21, # Confused.
+    CONFUSED = 21 # Confused.
 
     # playerIndex (int)
     # head (bool):True if coin is head.
-    COIN = 22, # Result of the coin flip.
+    COIN = 22 # Result of the coin flip.
 
     # result (int):If 0, the player with player index 0 wins; if 1, the player with player index 1 wins; if 2, it's a draw.
     # reason (int):1: 0 Prize cards. 2: Start turn with 0 deck cards. 3: No Pokémon in Active Spot. 4: A card effect.
-    RESULT = 23, # Result of the match.
+    RESULT = 23 # Result of the match.
     
     # Please note that new elements may be appended to the Enum during the competition.
 
@@ -550,7 +550,7 @@ def search_begin(agent_observation: Observation,
     state = agent_observation.current
     your_index = state.yourIndex
 
-    if agent_observation.select.deck != None:
+    if agent_observation.select is not None and agent_observation.select.deck is not None:
         your_deck = []
     elif len(your_deck) < state.players[your_index].deckCount:
         raise ValueError("your_deck does not match the number of cards in your deck.")

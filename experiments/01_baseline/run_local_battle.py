@@ -1,6 +1,26 @@
 import json
 from datetime import datetime
-from kaggle_environments import make, environments
+import sys
+import os
+
+# Suppress noisy OpenSpiel exception print from kaggle_environments import at C-level
+fd_out = sys.stdout.fileno()
+fd_err = sys.stderr.fileno()
+saved_out = os.dup(fd_out)
+saved_err = os.dup(fd_err)
+
+devnull = os.open(os.devnull, os.O_WRONLY)
+os.dup2(devnull, fd_out)
+os.dup2(devnull, fd_err)
+
+try:
+    from kaggle_environments import make, environments
+finally:
+    os.dup2(saved_out, fd_out)
+    os.dup2(saved_err, fd_err)
+    os.close(devnull)
+    os.close(saved_out)
+    os.close(saved_err)
 
 if __name__ == "__main__":
     # print("Available environments:")
