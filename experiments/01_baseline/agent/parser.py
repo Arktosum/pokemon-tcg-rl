@@ -106,7 +106,9 @@ def add_player(sv: SparseVector, ps: PlayerState):
     add_cards(sv, ps.discard, 0.25)
 
 
-def get_encoder_input(obs: Observation, your_deck: list[int] = []) -> SparseVector:
+def get_encoder_input(obs: Observation, your_deck: list[int] = None) -> SparseVector:
+    if your_deck is None:
+        your_deck = []
     """Parses the entire observation into exactly 24 PyTorch words."""
     your_index = obs.current.yourIndex
     state = obs.current
