@@ -168,14 +168,14 @@ def get_encoder_input(obs: Observation, your_deck: list[int] = None) -> SparseVe
 def get_card(obs: Observation, area: AreaType, index: int, player_index: int) -> Pokemon | Card | None:
     ps = obs.current.players[player_index]
     match area:
-        case AreaType.DECK: return obs.select.deck[index]
-        case AreaType.HAND: return ps.hand[index]
-        case AreaType.DISCARD: return ps.discard[index]
-        case AreaType.ACTIVE: return ps.active[index]
-        case AreaType.BENCH: return ps.bench[index]
-        case AreaType.PRIZE: return ps.prize[index]
-        case AreaType.STADIUM: return obs.current.stadium[index]
-        case AreaType.LOOKING: return obs.current.looking[index]
+        case AreaType.DECK: return obs.select.deck[index] if obs.select.deck else None
+        case AreaType.HAND: return ps.hand[index] if ps.hand else None
+        case AreaType.DISCARD: return ps.discard[index] if index < len(ps.discard) else None
+        case AreaType.ACTIVE: return ps.active[index] if index < len(ps.active) else None
+        case AreaType.BENCH: return ps.bench[index] if index < len(ps.bench) else None
+        case AreaType.PRIZE: return ps.prize[index] if index < len(ps.prize) else None
+        case AreaType.STADIUM: return obs.current.stadium[index] if obs.current.stadium and index < len(obs.current.stadium) else None
+        case AreaType.LOOKING: return obs.current.looking[index] if obs.current.looking else None
         case _: return None
 
 def decoder_main(sv: SparseVector, feature_index: int, card: Card | Pokemon | None):
@@ -212,7 +212,7 @@ def get_decoder_input(obs: Observation, actions: list[list[int]]) -> SparseVecto
                 case OptionType.SPECIAL_CONDITION: sv.add(4 + o.specialConditionType, 1)
                 case OptionType.NUMBER: sv.add(9 + min(o.number, 4), 1)
                 case OptionType.ATTACK: sv.add(decoder_attack_offset + o.attackId, 1)
-                case OptionType.PLAY: decoder_main(sv, 0, ps.hand[o.index])
+                case OptionType.PLAY: decoder_main(sv, 0, get_card(obs, AreaType.HAND, o.index, your_index))
                 case OptionType.ATTACH:
                     decoder_main(sv, 1, get_card(obs, o.area, o.index, your_index))
                     decoder_main(sv, 2, get_card(obs, o.inPlayArea, o.inPlayIndex, your_index))
@@ -225,11 +225,11 @@ def get_decoder_input(obs: Observation, actions: list[list[int]]) -> SparseVecto
                 case OptionType.CARD: decoder_card(sv, context, get_card(obs, o.area, o.index, o.playerIndex))
                 case OptionType.TOOL_CARD:
                     card = get_card(obs, o.area, o.index, o.playerIndex)
-                    if card is not None and len(card.tools) > o.toolIndex:
+                    if card is not None and hasattr(card, 'tools') and len(card.tools) > o.toolIndex:
                         decoder_card(sv, context, card.tools[o.toolIndex])
                 case OptionType.ENERGY_CARD | OptionType.ENERGY:
                     card = get_card(obs, o.area, o.index, o.playerIndex)
-                    if card is not None and len(card.energyCards) > o.energyIndex:
+                    if card is not None and hasattr(card, 'energyCards') and len(card.energyCards) > o.energyIndex:
                         decoder_card(sv, context, card.energyCards[o.energyIndex])
                 case OptionType.SKILL: decoder_card_id(sv, context, o.cardId)
     return sv

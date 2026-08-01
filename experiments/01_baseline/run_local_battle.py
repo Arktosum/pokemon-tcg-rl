@@ -14,7 +14,7 @@ if __name__ == "__main__":
     try:
         env = make(target_env, debug=True)
         print("Starting battle...")
-        agent1 = os.path.join(os.path.dirname(__file__), "agent_mcts.py")
+        agent1 = os.path.join(os.path.dirname(__file__), "agent", "main.py")
         agent2 = os.path.join(os.path.dirname(__file__), "agent", "main.py")
         steps = env.run([agent1, agent2])
         print(f"Battle finished in {len(steps)} steps.")

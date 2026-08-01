@@ -19,7 +19,7 @@ def read_deck_csv() -> list[int]:
     if not os.path.exists(file_path):
         file_path = "/kaggle_simulations/agent/deck.csv"
     with open(file_path, "r") as file:
-        csv = file.read().split("\n")
+        csv = [line.strip() for line in file.read().strip().split("\n") if line.strip()]
     deck = []
     for i in range(60):
         deck.append(int(csv[i]))
