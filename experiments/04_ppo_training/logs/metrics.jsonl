@@ -1,0 +1,2 @@
+{"type": "gameplay", "timestamp": "2026-08-02T07:36:07.356678", "episode": 0, "reward": -5.0, "steps": 31, "win": 0}
+{"type": "network", "timestamp": "2026-08-02T07:36:07.602089", "episode": 0, "actor_loss": 2.907485008239746, "critic_loss": 5.122089862823486, "entropy": 1.3609446287155151}

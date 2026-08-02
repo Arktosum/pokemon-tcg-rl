@@ -5,6 +5,8 @@ import random
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import json
+from datetime import datetime
 from typing import List, Tuple
 
 _bc_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../02_behavioral_cloning"))
@@ -58,7 +60,7 @@ def calc_entropy(masked_logits, action_mask):
     entropy = -(probs * log_probs).sum(dim=-1).mean()
     return entropy
 
-def collect_rollout(env, model, max_steps=10):
+def collect_rollout(env, model, max_steps=10000000, ep=0):
     model.eval()
     samples = []
     rewards = []
@@ -75,6 +77,11 @@ def collect_rollout(env, model, max_steps=10):
             obs, reward, done, info = env.step(DECK_LIST)
             done_flag = done[0] if isinstance(done, list) else done
             if done_flag:
+                rew_val = reward[0] if isinstance(reward, list) else reward
+                rew_val = rew_val if rew_val is not None else 0.0
+                timestamp = datetime.now().isoformat()
+                with open('logs/metrics.jsonl', 'a') as f:
+                    f.write(json.dumps({"type": "gameplay", "timestamp": timestamp, "episode": ep, "reward": float(rew_val), "steps": step_i, "win": 1 if rew_val > 0 else 0}) + '\n')
                 break
             continue
             
@@ -136,12 +143,18 @@ def collect_rollout(env, model, max_steps=10):
         log_probs.append(log_prob)
         
         if done_flag:
+            timestamp = datetime.now().isoformat()
+            with open('logs/metrics.jsonl', 'a') as f:
+                f.write(json.dumps({"type": "gameplay", "timestamp": timestamp, "episode": ep, "reward": float(rew_val), "steps": step_i, "win": 1 if rew_val > 0 else 0}) + '\n')
+            print(f"Episode finished natively after {step_i + 1} steps")
             break
             
     next_value = 0.0
     return samples, rewards, values, dones, log_probs, next_value
 
 def train(test_mode=False):
+    os.makedirs('logs', exist_ok=True)
+    os.makedirs('checkpoints', exist_ok=True)
     cfg = TitanConfig()
     model = TitanTransformerPPO(cfg)
     
@@ -171,9 +184,12 @@ def train(test_mode=False):
     
     env = PokemonPPOEnv()
     
+    best_win_rate = -1.0
+    val_env = PokemonPPOEnv(fixed_opponent=os.path.abspath(os.path.join(os.path.dirname(__file__), "../03_rule_based_eval/agents/dragapult.py")))
+
     episodes = 1 if test_mode else 100
     for ep in range(episodes):
-        samples, rewards, values, dones, old_log_probs, next_value = collect_rollout(env, model, max_steps=5 if test_mode else 200)
+        samples, rewards, values, dones, old_log_probs, next_value = collect_rollout(env, model, max_steps=50 if test_mode else 10000000, ep=ep)
         
         if len(samples) == 0:
             continue
@@ -214,7 +230,70 @@ def train(test_mode=False):
         loss.backward()
         optimizer.step()
         
+        with open('logs/metrics.jsonl', 'a') as f:
+            f.write(json.dumps({"type": "network", "timestamp": datetime.now().isoformat(), "episode": ep, "actor_loss": float(actor_loss.item()), "critic_loss": float(critic_loss.item()), "entropy": float(entropy.item())}) + '\n')
+            
         print(f"Ep {ep}: loss {loss.item():.4f}, actor_loss {actor_loss.item():.4f}, critic_loss {critic_loss.item():.4f}, entropy {entropy.item():.4f}")
+        
+        if (ep + 1) % 50 == 0:
+            model.eval()
+            val_wins = 0
+            val_games = 10
+            print("Running validation against Dragapult...")
+            for _ in range(val_games):
+                obs = val_env.reset()
+                for _ in range(1000):
+                    obs_raw = obs[0]['observation'] if isinstance(obs, list) else obs
+                    obs_class = to_observation_class(obs_raw)
+                    if obs_class.select is None or obs_class.current is None:
+                        obs, reward, done, info = val_env.step(DECK_LIST)
+                        done_flag = done[0] if isinstance(done, list) else done
+                        if done_flag:
+                            rew_val = reward[0] if isinstance(reward, list) else reward
+                            if rew_val is not None and rew_val > 0:
+                                val_wins += 1
+                            break
+                        continue
+                    
+                    enc_sv = get_encoder_input(obs_class)
+                    num_options = len(obs_class.select.option) if obs_class.select.option else 1
+                    if num_options == 0: num_options = 1
+                    actions = [[i] for i in range(num_options)]
+                    dec_sv = get_decoder_input(obs_class, actions)
+                    
+                    enc_indices = torch.tensor(enc_sv.index, dtype=torch.long).unsqueeze(0)
+                    enc_values = torch.tensor(enc_sv.value, dtype=torch.float).unsqueeze(0)
+                    enc_offsets = torch.tensor(enc_sv.offset, dtype=torch.long).unsqueeze(0)
+                    
+                    dec_indices = torch.tensor(dec_sv.index, dtype=torch.long)
+                    dec_values = torch.tensor(dec_sv.value, dtype=torch.float)
+                    dec_offsets = torch.tensor(dec_sv.offset, dtype=torch.long)
+                    
+                    action_mask = torch.zeros((1, num_options), dtype=torch.bool)
+                    
+                    with torch.no_grad():
+                        logits, _ = model(enc_indices, enc_values, enc_offsets, dec_indices, dec_values, dec_offsets, action_mask)
+                        
+                    action_idx = torch.argmax(logits[0]).item()
+                    
+                    try:
+                        obs, reward, done, info = val_env.step([action_idx])
+                        done_flag = done[0] if isinstance(done, list) else done
+                        rew_val = reward[0] if isinstance(reward, list) else reward
+                    except Exception:
+                        done_flag = True
+                        rew_val = 0.0
+                        
+                    if done_flag:
+                        if rew_val is not None and rew_val > 0:
+                            val_wins += 1
+                        break
+            val_win_rate = val_wins / val_games
+            print(f"Validation win rate: {val_win_rate:.2f}")
+            if val_win_rate > best_win_rate:
+                best_win_rate = val_win_rate
+                torch.save(model.state_dict(), 'checkpoints/titan_ppo_best.pt')
+                print("New best model saved!")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

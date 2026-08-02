@@ -1,10 +1,18 @@
 import os
 import sys
 
+def _find_root(start_dir):
+    d = os.path.abspath(start_dir)
+    while d and not os.path.exists(os.path.join(d, "experiments", "01_baseline")):
+        parent = os.path.dirname(d)
+        if parent == d: break
+        d = parent
+    return d
+
 if '__file__' in globals():
-    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    base_dir = _find_root(os.path.dirname(__file__))
 else:
-    base_dir = os.getcwd()
+    base_dir = _find_root(os.getcwd())
 
 baseline_agent_dir = os.path.abspath(os.path.join(base_dir, "experiments", "01_baseline", "agent"))
 if baseline_agent_dir not in sys.path:
