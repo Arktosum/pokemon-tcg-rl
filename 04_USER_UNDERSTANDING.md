@@ -11,3 +11,7 @@
 **Timestamp:** 2026-07-30 13:12:00 +05:30
 **User Feedback:** "ok.. cool i made a few changes to the script and also added the replay config to the CABT md file.. acknowledge the changes.."
 **Adjustment Needed:** Noted the user manually tweaked `run_local_battle.py` and appended the baseline schema to `CABT_ENGINE_API_DOCUMENTATION.md`. System is perfectly in sync.
+## ENTRY 003: PPO Bug Extermination
+**Timestamp:** 2026-08-02 07:09:06 
+**User Feedback:** The user strictly commanded NEVER to use generic try/except blocks to silently suppress errors in the rollout buffer. Crashing is better than feeding dummy tensors into the model.
+**Adjustment Needed:** Adhere to absolute transparency. Let PyTorch throw tracebacks to expose the true root cause.
