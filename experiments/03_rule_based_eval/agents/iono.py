@@ -382,8 +382,14 @@ class IonoAgent(BaseAgentClass):
 
 # Module-level agent callable for CABT engine compatibility
 _agents_dir = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.path.join(os.getcwd(), "experiments", "03_rule_based_eval", "agents")
-_deck_path = os.path.join(baseline_agent_dir, "deck.csv")
+_deck_path = os.path.join(_agents_dir, "iono_deck.csv")
 _iono_instance = IonoAgent(deck_path=_deck_path)
 
 def agent(obs_dict: dict) -> list[int]:
-    return _iono_instance(obs_dict)
+    try:
+        return _iono_instance(obs_dict)
+    except Exception as e:
+        import traceback
+        print("CRITICAL IONO ERROR:")
+        traceback.print_exc()
+        raise e

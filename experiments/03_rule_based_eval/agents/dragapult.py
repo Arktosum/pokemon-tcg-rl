@@ -355,7 +355,7 @@ class DragapultAgent(BaseAgentClass):
 
         def attach_score(attach_id: int, pokemon: Pokemon, active: bool) -> int:
             energy_count = len(pokemon.energies)
-            if card_table[attach_id].cardType == CardType.TOOL:
+            if attach_id > 0 and card_table[attach_id].cardType == CardType.TOOL:
                 score = 60000
                 if active:
                     score += 1000
@@ -803,7 +803,7 @@ class DragapultAgent(BaseAgentClass):
             return output
         return super().act(obs)
 
-deck_path = os.path.join(baseline_agent_dir, "deck.csv")
+deck_path = os.path.join(base_dir, "experiments", "03_rule_based_eval", "agents", "dragapult_deck.csv")
 _dragapult_instance = DragapultAgent(deck_path=deck_path)
 def agent(obs_dict):
     return _dragapult_instance(obs_dict)

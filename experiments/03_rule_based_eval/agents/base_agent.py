@@ -12,6 +12,7 @@ class BaseAgentClass:
                 self.deck.append(int(line))
                 if len(self.deck) == 60:
                     break
+        print(f"BaseAgentClass loaded deck from {deck_path} with {len(self.deck)} cards. First 5: {self.deck[:5]}")
 
     def parse_observation(self, obs_dict: dict):
         return to_observation_class(obs_dict)

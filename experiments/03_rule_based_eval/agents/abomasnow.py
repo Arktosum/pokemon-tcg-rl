@@ -150,13 +150,12 @@ class AbomasnowAgent(BaseAgentClass):
                             score -= 20
                         if hand_counts[card.id] >= 2:
                             score += 500
-                        hand_counts[card.id] -= 1
             elif o.type == OptionType.PLAY:
                 card = _get_card(obs, AreaType.HAND, o.index, my_index)
                 if card is None:
                     score = -1
                 else:
-                    score = 10000
+                    score = 100
                     if card.id == Ultra_Ball:
                         if (hand_counts[Basic_Water_Energy] >= 3
                                 or (my_state.handCount >= 4
@@ -226,10 +225,11 @@ class AbomasnowAgent(BaseAgentClass):
                 else:
                     score = -1
             elif o.type == OptionType.ATTACK:
-                score = 1000
+                score = 100
                 if o.attackId == 1042:  # Riptide
                     score += discard_counts[Basic_Water_Energy] * 20 - 90
                 elif o.attackId == 1046:  # Hammer-lanche
+                    score = 1000
                     if op_active_hp <= 200:
                         score -= 100
                     else:
@@ -242,7 +242,10 @@ class AbomasnowAgent(BaseAgentClass):
 
 
 # Module-level agent callable for CABT engine compatibility
-_deck_path = os.path.join(baseline_agent_dir, "deck.csv")
+if '__file__' in globals():
+    _deck_path = os.path.join(os.path.dirname(__file__), "abomasnow_deck.csv")
+else:
+    _deck_path = os.path.join(os.getcwd(), 'experiments', '03_rule_based_eval', 'agents', 'abomasnow_deck.csv')
 _abomasnow_instance = AbomasnowAgent(deck_path=_deck_path)
 
 def agent(obs_dict: dict) -> list[int]:

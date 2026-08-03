@@ -3,3 +3,4 @@ pokemon-tcg-ai-battle
 *.pyc
 *.log
 *.pt
+/experiments/04_ppo_training/replays

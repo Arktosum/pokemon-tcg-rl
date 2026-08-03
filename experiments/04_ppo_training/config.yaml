@@ -1,0 +1,32 @@
+model:
+  d_model: 128
+  n_heads: 4
+  n_layers: 3
+  d_ff: 256
+  dropout: 0.1
+  max_actions: 64
+  n_words: 24
+
+ppo:
+  total_episodes: 50000
+  learning_rate: 0.0001
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_coef: 0.2
+  ent_coef: 0.01
+  vf_coef: 0.5
+  save_freq: 100
+  max_steps: 2048
+
+curriculum:
+  checkpoint_freq: 200
+  validation_freq: 100
+  sampling_weights:
+    latest_checkpoint: 0.1
+    best_checkpoint: 0.2
+    random_action: 0.0
+    rule_based: 0.7
+  rule_based_bots:
+    - "abomasnow.py"
+    - "dragapult.py"
+    - "iono.py"

@@ -13,15 +13,8 @@ if _baseline_agent not in sys.path:
 
 from parser import encoder_size, decoder_size
 
-@dataclass
-class TitanConfig:
-    d_model: int = 128
-    n_heads: int = 4
-    n_layers: int = 2
-    d_ff: int = 256
-    dropout: float = 0.1
-    max_actions: int = 64
-    n_words: int = 24
+from ppo_config import TitanConfig
+import numpy as np
 
 class TitanTransformerPPO(nn.Module):
     def __init__(self, config: TitanConfig):
@@ -68,7 +61,7 @@ class TitanTransformerPPO(nn.Module):
         enc_emb = self.encoder_embed(flat_idx, global_offsets, per_sample_weights=flat_val)
         return enc_emb.view(B, self.config.n_words, self.config.d_model)
 
-    def forward(self, enc_indices, enc_values, enc_offsets, dec_indices, dec_values, dec_offsets, action_mask):
+    def forward(self, enc_indices, enc_values, enc_offsets, decoder_inputs_list, action_mask):
         cfg = self.config
         enc_emb = self._embed_encoder(enc_indices, enc_values, enc_offsets)
         positions = torch.arange(cfg.n_words, device=enc_emb.device)
@@ -82,9 +75,38 @@ class TitanTransformerPPO(nn.Module):
         B = enc_indices.shape[0]
         max_N = action_mask.shape[1]
 
-        if dec_indices.numel() == 0 or (dec_indices.numel() == 1 and dec_indices[0] == 0 and dec_values[0] == 0):
+        # Flatten decoder_inputs_list
+        all_dec_idx = []
+        all_dec_val = []
+        all_dec_off = []
+        current_offset = 0
+
+        dummy_idx = torch.tensor([0], dtype=torch.long, device=enc_indices.device)
+        dummy_val = torch.tensor([0.0], dtype=torch.float, device=enc_indices.device)
+
+        for batch_list in decoder_inputs_list:
+            if batch_list is None:
+                batch_list = []
+            num_options = len(batch_list)
+            for j in range(max_N):
+                if j < num_options:
+                    idxs, vals, _ = batch_list[j]
+                    all_dec_off.append(current_offset)
+                    all_dec_idx.append(idxs)
+                    all_dec_val.append(vals)
+                    current_offset += idxs.size(0)
+                else:
+                    all_dec_off.append(current_offset)
+                    all_dec_idx.append(dummy_idx)
+                    all_dec_val.append(dummy_val)
+                    current_offset += 1
+
+        if len(all_dec_idx) == 0:
             dec_emb = torch.zeros(B * max_N, self.config.d_model, device=enc_indices.device)
         else:
+            dec_indices = torch.cat(all_dec_idx)
+            dec_values = torch.cat(all_dec_val)
+            dec_offsets = torch.as_tensor(np.array(all_dec_off, dtype=np.int64), device=enc_indices.device)
             dec_emb = self.decoder_embed(dec_indices, dec_offsets, per_sample_weights=dec_values)
         
         dec_emb = dec_emb.view(B, max_N, self.config.d_model)
